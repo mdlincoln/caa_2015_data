@@ -26,7 +26,4 @@ schedule <- raw_schedule %>%
     ) %>%
   select(-raw_content, -date)
 write.csv(schedule, "schedule.csv", row.names = FALSE)
-
-
-dig_words <- c("digital", "computer", "internet")
-
+save(schedule, file = "schedule.RData")
