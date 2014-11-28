@@ -26,7 +26,8 @@ schedule <- raw_schedule %>%
       str_trim() %>%
       str_replace_all("\n", "; ") %>%
       str_replace_all("([a-z])([A-Z])", "\1; \2"),
-    category = str_replace(category, ":", "") %>% str_trim()
+    category = str_replace(category, ":", "") %>% str_trim(),
+    title = title  %>% str_replace_all("([a-z])([A-Z])", "\1; \2")
     ) %>%
   select(-raw_content, -date)
 write.csv(schedule, "schedule.csv", row.names = FALSE)
