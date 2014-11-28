@@ -1,6 +1,7 @@
 library(gender)
 library(dplyr)
-library(ggplot2)
+library(openNLP)
+library(stringr)
 
 load("schedule.RData")
 
@@ -16,22 +17,33 @@ data.frame(first_gender, other_gender) %>% count(other_gender)
 
 
 # NER
-s <- schedule$session_text[5]
+s <- paste(schedule$session_text, collapse = " ")
 sent_token_annotator <- Maxent_Sent_Token_Annotator()
 word_token_annotator <- Maxent_Word_Token_Annotator()
 a2 <- annotate(s, list(sent_token_annotator, word_token_annotator))
-entity_ann <- Maxent_Entity_Annotator()
-annotations <- annotate(s, entity_ann, a2)
+en_an <- Maxent_Entity_Annotator()
+entities <- en_an(s, a2)
+names <- sapply(entities, function(x) str_sub(s, x$start, x$end))
+
+genders <- sapply(gender(names, method = "ipums"), function(x) x$gender)
+counts <- data.frame(genders) %>% count(genders)
 
 # Find digital panels
 any_match <- function(string, array) {
-  matches <- sapply(array, function(x) str_detect(string, x))
+  expr <- paste0("(?:", paste(array, collapse = ")?(?:"), ")?")
+  matches <-
   return(any(matches))
 }
 
-keywords <- c("digital", "computer", "internet")
-schedule %>% filter(any_match(session_text, keywords)) %>% write.csv("digital.csv")
+keywords <- c("[Dd]igital", "[Cc]omputer", "[Ii]nternet")
+digital <- schedule %>% filter(str_detect(session_text, "(?:[Dd]igital)?(?:?:[Ccomputer") | str_detect(session_text, "[Cc]omputer"))
 
+str_detect(schedule$session_text, keyword)
+matches <- sapply(keywords, function(x) str_detect(schedule$session_text, x))
+
+paste0("(?:", paste(keywords, collapse = ")?(?:"), ")")
+
+any_match(schedule$title, keywords)
 
 
 ggplot(schedule, aes(x = wday(starttime, label = TRUE), fill = category))+ geom_histogram(position = "dodge")
